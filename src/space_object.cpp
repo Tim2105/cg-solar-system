@@ -2,39 +2,33 @@
 
 void Space_Object::update()
 {
-    /** \todo Update `model_matrix_` and position (`position_`) for each object.
-    * 1. Combine translation and scaling matrices to get a result like in screenshots/planet_system_initial.png assuming:
-    *   - sun at origin
-    *   - all objects scaled by radius
-    *   - all objects translated by `distance` in x direction
-    * 2. Now use y-axis-rotation matrices in the right places to allow rotation
-    *    around the object's axis (angle_self) and sun (angle_parent)
-    * 3. You can also support a tilt angle if you like (`angle_tilt`) rotations
-    * 4. Update the object's position using your constructed model matrix
-    * Hints:
-    *   - See glmath.h/cpp for an overview about implemented matrices.
-    *   - Order is important!
-    */
-
    mat4 matScaling = mat4::scale(radius_);
-   mat4 matRotation = mat4::rotate_y(angle_self_);
+   mat4 matRotationParent = mat4::rotate_y(angle_parent_);
+   vec3 rotationAxis = mat4::rotate_z(angle_tilt_) * vec4(0, 1, 0, 0);
+   mat4 matRotationSelf = mat4::rotate_angle_axis(angle_self_, rotationAxis);
    mat4 matTranslation = mat4::translate(vec3(distance_, 0, 0));
 
-   model_matrix_ = matRotation * matTranslation * matScaling;
-   position_ = model_matrix_ * position_;
+    model_matrix_ = matRotationParent * matTranslation * matRotationSelf * matScaling;
+    position_ = model_matrix_ * position_;
 }
 
 //-----------------------------------------------------------------------------
 
 void Moon::update()
 {
-    /** \todo Update moon's `model_matrix_` and position (`position_`).
-    *  The moon is a bit special, it must rotate around its `parent_planet_`. Be careful with the
-    *  translation-rotation-order since rotation matrices always rotate around the current origin.
-    */
+    // Funktioniert, wenn man die Abstand zwischen der Erde und dem Mond erhöht (Translation),
+    // ansonsten sieht man den Mond nicht.
+    // Ist komisch.
 
-   Space_Object::update();
+    mat4 matScaling = mat4::scale(radius_);
+    mat4 matRotationParent = mat4::rotate_y(angle_parent_);
+    vec3 rotationAxis = mat4::rotate_z(angle_tilt_) * vec4(0, 1, 0, 0);
+    mat4 matRotationSelf = mat4::rotate_angle_axis(angle_self_, rotationAxis);
+    mat4 matTranslation = mat4::translate(vec3(distance_, 0, 0));
 
+    model_matrix_ = parent_planet_->model_matrix_ * matRotationParent *
+                    matTranslation * matRotationSelf * matScaling;
+    position_ = model_matrix_ * position_;
 }
 //-----------------------------------------------------------------------------
 
