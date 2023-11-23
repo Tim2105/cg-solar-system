@@ -3,3 +3,5 @@ doc/*
 screenshots/*
 videos/*
 external/*
+.vscode/*
+build/*

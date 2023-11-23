@@ -16,6 +16,12 @@ void Space_Object::update()
     *   - Order is important!
     */
 
+   mat4 matScaling = mat4::scale(radius_);
+   mat4 matRotation = mat4::rotate_y(angle_self_);
+   mat4 matTranslation = mat4::translate(vec3(distance_, 0, 0));
+
+   model_matrix_ = matRotation * matTranslation * matScaling;
+   position_ = model_matrix_ * position_;
 }
 
 //-----------------------------------------------------------------------------
@@ -26,6 +32,8 @@ void Moon::update()
     *  The moon is a bit special, it must rotate around its `parent_planet_`. Be careful with the
     *  translation-rotation-order since rotation matrices always rotate around the current origin.
     */
+
+   Space_Object::update();
 
 }
 //-----------------------------------------------------------------------------
