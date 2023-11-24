@@ -455,10 +455,13 @@ void Solar_viewer::render()
     vec4 center;
     vec4 up;
 
+    Space_Object& camCenter = sun_;
+    if(look_at_ != nullptr)
+        camCenter = *look_at_;
 
-    eye = vec4(0, 0, 7, 1.0);
-    radius = sun_.radius_;
-    center = sun_.position_;
+    radius = camCenter.radius_;
+    center = camCenter.position_;
+    eye = mat4::translate(center) * camera_rotation_ * vec4(0, 0, radius * dist_factor_, 1.0);
     up = vec4(0, 1, 0, 0);
 
     view = mat4::look_at(vec3(eye), (vec3)center, (vec3)up);

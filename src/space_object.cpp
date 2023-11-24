@@ -9,26 +9,23 @@ void Space_Object::update()
    mat4 matTranslation = mat4::translate(vec3(distance_, 0, 0));
 
     model_matrix_ = matRotationParent * matTranslation * matRotationSelf * matScaling;
-    position_ = model_matrix_ * position_;
+    position_ = matRotationParent * vec4(distance_, 0, 0, 0);
 }
 
 //-----------------------------------------------------------------------------
 
 void Moon::update()
 {
-    // Funktioniert, wenn man die Abstand zwischen der Erde und dem Mond erhöht (Translation),
-    // ansonsten sieht man den Mond nicht.
-    // Ist komisch.
-
     mat4 matScaling = mat4::scale(radius_);
     mat4 matRotationParent = mat4::rotate_y(angle_parent_);
     vec3 rotationAxis = mat4::rotate_z(angle_tilt_) * vec4(0, 1, 0, 0);
     mat4 matRotationSelf = mat4::rotate_angle_axis(angle_self_, rotationAxis);
     mat4 matTranslation = mat4::translate(vec3(distance_, 0, 0));
+    mat4 matTranslationParent = mat4::translate(parent_planet_->position_);
 
-    model_matrix_ = parent_planet_->model_matrix_ * matRotationParent *
+    model_matrix_ = matTranslationParent * matRotationParent *
                     matTranslation * matRotationSelf * matScaling;
-    position_ = model_matrix_ * position_;
+    position_ = matTranslationParent * matRotationParent * vec4(distance_, 0, 0, 0);
 }
 //-----------------------------------------------------------------------------
 
