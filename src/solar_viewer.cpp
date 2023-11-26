@@ -24,11 +24,11 @@ using namespace std;
 #define D_DISTANCE_SCALE_MOON 1.5f
 
 // better version <-- use this as soon as you finished the first 2 tasks
-//#define D_RADIUS_SCALE_SMALL 12.0f
-//#define D_RADIUS_SCALE_BIG 7.0f
-//#define D_DISTANCE_SCALE_SMALL 0.07f
-//#define D_DISTANCE_SCALE_BIG 0.07f
-//#define D_DISTANCE_SCALE_MOON 1.5f
+// #define D_RADIUS_SCALE_SMALL 12.0f
+// #define D_RADIUS_SCALE_BIG 7.0f
+// #define D_DISTANCE_SCALE_SMALL 0.07f
+// #define D_DISTANCE_SCALE_BIG 0.07f
+// #define D_DISTANCE_SCALE_MOON 1.5f
 
 // realistic version <-- use this just if you are interested in realistic scales
 // or if you want to get a 'lost in space' feeling (use the spaceship and try to reach some of the other planets)
@@ -236,12 +236,15 @@ void Solar_viewer::keyboard(int key, int scancode, int action, int mods)
                 break;
             }
 
-            /** \todo Implement the ability to change the viewer's distance to the celestial body.
-         *    - key 9 should increase and key 0 should decrease the `dist_factor_`
-         *    - make sure that `2.5 < dist_factor_ < 20.0`
-         *  Note: the mouse wheel also activates zooming, if you finish this task.
-         */
+            case GLFW_KEY_9: {
+                dist_factor_ = std::max(dist_factor_ - 2.0, 2.5);
+                break;
+            }
 
+            case GLFW_KEY_0: {
+                dist_factor_ = std::min(dist_factor_ + 2.0, 20.0);
+                break;
+            }
 
             case GLFW_KEY_W:
             {
@@ -435,19 +438,6 @@ void Solar_viewer::render()
     // clear framebuffer and depth buffer first
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    /** \todo Implement a kind of navigation through the solar system.
-     *   - Allow rotation of the camera.
-     *     `camera_rotation_` holds the current camera rotation and is updated when certain keys are pressed (see `Solar_viewer::keyboard(...)`).
-     *     `dist_factor_` is the number of radii from the center of the planet to the camera.
-     *   - Don't modify the view matrix directly but instead the input of `mat4::look_at(...)`
-     *   - At the beginning, the camera should be translated in positive z-direction from the planet's center.
-     *   - The camera should always face the planet's center. The rotation is meant to be around the planet'center not around the camera's center.
-     *   - If one of the keys `1` to `7` is pressed, the camera should face the respective celestial body (compare `Solar_viewer::keyboard(...)`).
-     *     `look_at_` is updated in this case and stores a pointer to the current looked at planet.
-     *   - To support changing distance to the body see `Solar_viewer::keyboard(...)`
-     * Hint: To understand what effect is desired, it helps to watch the solution videos.
-     */
-
     mat4 projection;
     mat4 view;
     float radius;
@@ -455,12 +445,12 @@ void Solar_viewer::render()
     vec4 center;
     vec4 up;
 
-    Space_Object& camCenter = sun_;
+    Space_Object* camCenter = &sun_;
     if(look_at_ != nullptr)
-        camCenter = *look_at_;
+        camCenter = look_at_;
 
-    radius = camCenter.radius_;
-    center = camCenter.position_;
+    radius = camCenter->radius_;
+    center = camCenter->position_;
     eye = mat4::translate(center) * camera_rotation_ * vec4(0, 0, radius * dist_factor_, 1.0);
     up = vec4(0, 1, 0, 0);
 
