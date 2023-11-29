@@ -529,8 +529,6 @@ void Solar_viewer::draw_scene(mat4& projection, mat4& view)
         time = -1e5;
 
         /** \todo Provide the correct input and draw order for all your objects.
-    * 1. Add the `stars_` object to the scene. It is also just a sphere, but drawn from inside.
-    *
     * 2. For all objects in the `planets_` vector, replace the `color_shader_` by the `phong_shader_`
     *    - Look at the shader code (`shader/phong.vert`, `shader/phong.frag`).
     *    - All uniforms must be passed here (`set_uniform(...)`).
@@ -553,17 +551,25 @@ void Solar_viewer::draw_scene(mat4& projection, mat4& view)
     * 5. Feel free to try out your own ideas.
 	*/
 
-    // render sun with simple shader
-    m_matrix = sun_.model_matrix_;
+    m_matrix = stars_.model_matrix_;
     mv_matrix = view * m_matrix;
     mvp_matrix = projection * mv_matrix;
     color_shader_.use();
     color_shader_.set_uniform("modelview_projection_matrix", mvp_matrix);
     color_shader_.set_uniform("tex", 0);
     color_shader_.set_uniform("greyscale", (int)greyscale_);
+    stars_.texture_.bind();
+    unit_sphere_mesh_.draw();
+
+    // render sun with simple shader
+    m_matrix = sun_.model_matrix_;
+    mv_matrix = view * m_matrix;
+    mvp_matrix = projection * mv_matrix;
+    color_shader_.set_uniform("modelview_projection_matrix", mvp_matrix);
     sun_.texture_.bind();
     unit_sphere_mesh_.draw();
 
+    phong_shader_.use();
 
     for (Space_Object* planet : planets_)
     {
@@ -571,7 +577,10 @@ void Solar_viewer::draw_scene(mat4& projection, mat4& view)
         mv_matrix = view * m_matrix;
         mvp_matrix = projection * mv_matrix;
 
-        color_shader_.set_uniform("modelview_projection_matrix", mvp_matrix);
+        phong_shader_.set_uniform("modelview_matrix", mv_matrix);
+        phong_shader_.set_uniform("modelview_projection_matrix", mvp_matrix);
+        phong_shader_.set_uniform("greyscale", (int)greyscale_);
+        phong_shader_.set_uniform("light_position", mvp_matrix * sun_.position_);
         planet->texture_.bind();
         unit_sphere_mesh_.draw();
     }
