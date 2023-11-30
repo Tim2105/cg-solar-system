@@ -452,7 +452,7 @@ void Solar_viewer::render()
     radius = camCenter->radius_;
     center = camCenter->position_;
     eye = mat4::translate(center) * camera_rotation_ * vec4(0, 0, radius * dist_factor_, 1.0);
-    up = vec4(0, 1, 0, 0);
+    up = camera_rotation_ * vec4(0, 1, 0, 0);
 
     view = mat4::look_at(vec3(eye), (vec3)center, (vec3)up);
 
@@ -569,6 +569,7 @@ void Solar_viewer::draw_scene(mat4& projection, mat4& view)
     sun_.texture_.bind();
     unit_sphere_mesh_.draw();
 
+    color_shader_.disable();
     phong_shader_.use();
 
     for (Space_Object* planet : planets_)
@@ -577,13 +578,19 @@ void Solar_viewer::draw_scene(mat4& projection, mat4& view)
         mv_matrix = view * m_matrix;
         mvp_matrix = projection * mv_matrix;
 
-        phong_shader_.set_uniform("modelview_matrix", mv_matrix);
+        mat3 normalMatrix = transpose(inverse(mat3(mv_matrix)));
+
         phong_shader_.set_uniform("modelview_projection_matrix", mvp_matrix);
+        phong_shader_.set_uniform("modelview_matrix", mv_matrix);
+        phong_shader_.set_uniform("normal_matrix", normalMatrix);
+        phong_shader_.set_uniform("light_position", mv_matrix * sun_.position_);
         phong_shader_.set_uniform("greyscale", (int)greyscale_);
-        phong_shader_.set_uniform("light_position", mvp_matrix * sun_.position_);
+
         planet->texture_.bind();
         unit_sphere_mesh_.draw();
     }
+
+    phong_shader_.disable();
 
 
     // check for OpenGL errors
