@@ -572,18 +572,20 @@ void Solar_viewer::draw_scene(mat4& projection, mat4& view)
     color_shader_.disable();
     phong_shader_.use();
 
+    vec4 sunPosInViewSpace = view * sun_.position_;
+    
     for (Space_Object* planet : planets_)
     {
         m_matrix = planet->model_matrix_;
         mv_matrix = view * m_matrix;
         mvp_matrix = projection * mv_matrix;
 
-        mat3 normalMatrix = transpose(inverse(mat3(mv_matrix)));
+        mat3 normalMatrix = inverse(transpose(mv_matrix));
 
         phong_shader_.set_uniform("modelview_projection_matrix", mvp_matrix);
         phong_shader_.set_uniform("modelview_matrix", mv_matrix);
         phong_shader_.set_uniform("normal_matrix", normalMatrix);
-        phong_shader_.set_uniform("light_position", mv_matrix * sun_.position_);
+        phong_shader_.set_uniform("light_position", sunPosInViewSpace);
         phong_shader_.set_uniform("greyscale", (int)greyscale_);
 
         planet->texture_.bind();
