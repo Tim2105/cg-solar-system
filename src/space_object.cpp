@@ -9,7 +9,7 @@ void Space_Object::update()
    mat4 matTranslation = mat4::translate(vec3(distance_, 0, 0));
 
     model_matrix_ = matRotationParent * matTranslation * matRotationSelf * matScaling;
-    position_ = matRotationParent * vec4(distance_, 0, 0, 0);
+    position_ = matRotationParent * vec4(distance_, 0, 0, 1.0);
 }
 
 //-----------------------------------------------------------------------------
@@ -25,7 +25,7 @@ void Moon::update()
 
     model_matrix_ = matTranslationParent * matRotationParent *
                     matTranslation * matRotationSelf * matScaling;
-    position_ = matTranslationParent * matRotationParent * vec4(distance_, 0, 0, 0);
+    position_ = matTranslationParent * matRotationParent * vec4(distance_, 0, 0, 1.0);
 }
 //-----------------------------------------------------------------------------
 
