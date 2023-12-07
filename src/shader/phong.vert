@@ -16,18 +16,6 @@ uniform vec4 light_position; //in eye space coordinates already
 
 void main()
 {
-    /** \todo Implement the phong vertex shader.
-     * - Setup all `out` variables defined above. They will be the input of the phong fragment shader.
-     * - To do so you can use all other vectors and matrices above
-     * - Don't forget to compute the vertex position in screen space and store it in the global variable gl_Position
-     * - In `Solar_Viewer::draw_scene(...)` you have to set all uniforms from both the vertex AND the pixel shader
-     *
-     * Hints: - Compute the vertex position, normal and light vector in eye space.
-     *        - Store the final vertex position in `gl_Position`
-     *        - Make sure that your vector sizes match
-     *        - Via .xyz you can access the first three components of a vec4
-     */
-
     v2f_texcoord = v_texcoord;
     v2f_normal = normalize(normal_matrix * v_normal);
 

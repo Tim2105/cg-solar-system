@@ -21,17 +21,6 @@ vec3 mirror(vec3 vector, vec3 normal) {
 
 void main()
 {
-    /**
-    *  Implement the Phong shading model (like in the first exercise)
-    *  - Use the passed `in` variables to compute the resulting color and store it in `f_color`.
-    *  - The texture's color value should be used as material parameter for ambient, diffuse and specular lighting.
-    *  - You can copy the function to extract the texture's color from the `color.frag` fragmentshader.
-    *  - Scale ambient and specular light component by 0.2 to get a more realistic result
-    *  - You do not have to implement shadows.
-    *
-    *  Hint: Here, functions like reflect, dot, max, min, normalize can be used in the same way as in the raytracer.
-     */
-
     vec3 color = texture(tex, v2f_texcoord.st).rgb;
 	float alpha = 1.0;
 
@@ -48,7 +37,7 @@ void main()
         vec3 r = mirror(v2f_light, v2f_normal);
         float cosAlpha = dot(r, v2f_view);
         if(cosAlpha > 0.0) {
-            specularColor = sunlight * color * pow(cosAlpha, shininess);
+            specularColor = sunlight * color * pow(cosAlpha, shininess) * 0.2;
         }
     }
 

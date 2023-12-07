@@ -226,13 +226,13 @@ void Solar_viewer::keyboard(int key, int scancode, int action, int mods)
 
             case GLFW_KEY_DOWN:
             {
-                camera_rotation_ = camera_rotation_ * mat4::rotate_x(-10.0);
+                camera_rotation_ = camera_rotation_ * mat4::rotate_x(10.0);
                 break;
             }
 
             case GLFW_KEY_UP:
             {
-                camera_rotation_ = camera_rotation_ * mat4::rotate_x(10.0);
+                camera_rotation_ = camera_rotation_ * mat4::rotate_x(-10.0);
                 break;
             }
 
@@ -529,11 +529,6 @@ void Solar_viewer::draw_scene(mat4& projection, mat4& view)
         time = -1e5;
 
         /** \todo Provide the correct input and draw order for all your objects.
-    * 2. For all objects in the `planets_` vector, replace the `color_shader_` by the `phong_shader_`
-    *    - Look at the shader code (`shader/phong.vert`, `shader/phong.frag`).
-    *    - All uniforms must be passed here (`set_uniform(...)`).
-    *    - When you're done, complete the shader code.
-    *
     * 3. For Earth replace `phong_shader` by `earth_shader`.
     *    - You can identify a specific planet in the `planets_` vector by its name (e.g. `if(planet->name_ == "earth")`
     *    - Look at the shader code (`shader/earth.vert`, `shader/earth.frag`).
@@ -570,7 +565,6 @@ void Solar_viewer::draw_scene(mat4& projection, mat4& view)
     unit_sphere_mesh_.draw();
 
     color_shader_.disable();
-    phong_shader_.use();
 
     vec4 sunPosInViewSpace = view * sun_.position_;
     
@@ -582,13 +576,36 @@ void Solar_viewer::draw_scene(mat4& projection, mat4& view)
 
         mat3 normalMatrix = inverse(transpose(mv_matrix));
 
-        phong_shader_.set_uniform("modelview_projection_matrix", mvp_matrix);
-        phong_shader_.set_uniform("modelview_matrix", mv_matrix);
-        phong_shader_.set_uniform("normal_matrix", normalMatrix);
-        phong_shader_.set_uniform("light_position", sunPosInViewSpace);
-        phong_shader_.set_uniform("greyscale", (int)greyscale_);
+        if(planet->name_ != "earth") {
+            phong_shader_.use();
+            phong_shader_.set_uniform("modelview_projection_matrix", mvp_matrix);
+            phong_shader_.set_uniform("modelview_matrix", mv_matrix);
+            phong_shader_.set_uniform("normal_matrix", normalMatrix);
+            phong_shader_.set_uniform("light_position", sunPosInViewSpace);
+            phong_shader_.set_uniform("greyscale", (int)greyscale_);
 
-        planet->texture_.bind();
+            planet->texture_.bind();
+        } else {
+            earth_shader_.use();
+            earth_shader_.set_uniform("modelview_projection_matrix", mvp_matrix);
+            earth_shader_.set_uniform("modelview_matrix", mv_matrix);
+            earth_shader_.set_uniform("normal_matrix", normalMatrix);
+            earth_shader_.set_uniform("light_position", sunPosInViewSpace);
+            earth_shader_.set_uniform("greyscale", (int)greyscale_);
+
+            Earth* earth = (Earth*)planet;
+
+            earth_shader_.set_uniform("day_texture", 0);
+            earth_shader_.set_uniform("night_texture", 1);
+            earth_shader_.set_uniform("cloud_texture", 2);
+            earth_shader_.set_uniform("gloss_texture", 3);
+
+            earth->texture_.bind();
+            earth->night_.bind();
+            earth->cloud_.bind();
+            earth->gloss_.bind();
+        }
+
         unit_sphere_mesh_.draw();
     }
 
