@@ -30,22 +30,31 @@ void Billboard::create_glow_texture(int resolution, int inner_radius,
     int height = resolution;
     img.resize(width * height * 4);
 
-    /** \todo Setup the texture for the sun billboard by filling `img` with color values.
-    *	- Draw an opaque (alpha == 1) circle with an `inner_radius` pixel radius in its middle
-    *	- Outside that circle the texture should become more and more transparent (alpha < 1) to mimic a nice glow effect
-    *   - Make sure that your texture is fully transparent (alpha == 0) at `outer_radius` to avoid seeing visible edges
-    *	- Experiment with the color (set in `Solar_Viewer::initialize()`) and with how fast you change the transparency
-    *     until the effect satisfies you
-    **/
+   float centerX = width / 2.0, centerY = height / 2.0;
 
     for (int w = 0; w < width; w++)
     {
         for (int h = 0; h < height; h++)
         {
-            img[(w * width + h) * 4 + 0] = 1.0; //red
-            img[(w * width + h) * 4 + 1] = 1.0; //green
-            img[(w * width + h) * 4 + 2] = 1.0; //blue
-            img[(w * width + h) * 4 + 3] = 1.0; //alpha
+            float alpha = 1.0;
+
+            float distSq = (w - centerX) * (w - centerX) + (h - centerY) * (h - centerY);
+            float dist = std::sqrt(distSq);
+
+            if(dist > inner_radius) {
+                if(dist >= outer_radius)
+                    alpha = 0.0;
+                else {
+                    // Lineare Interpolation
+                    alpha = (outer_radius - dist) / (outer_radius - inner_radius);
+                    alpha *= alpha;
+                }
+            }
+
+            img[(w * width + h) * 4 + 0] = color.r;
+            img[(w * width + h) * 4 + 1] = color.g;
+            img[(w * width + h) * 4 + 2] = color.b;
+            img[(w * width + h) * 4 + 3] = alpha;
         }
     }
 
@@ -142,4 +151,10 @@ void Billboard::update_angles(const vec3 &billboard_to_eye)
     *       right/left by 10 degree (`y_angle_` analogously by pressing top/down)
     **/
 
+    float r = norm(billboard_to_eye);
+
+    angle_x_ = std::acos(billboard_to_eye.y / r) - M_PI / 2;
+    angle_x_ *= 180 / M_PI;
+    angle_y_ = std::atan2(billboard_to_eye.x, billboard_to_eye.z);
+    angle_y_ *= 180 / M_PI;
 }

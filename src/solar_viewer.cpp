@@ -17,18 +17,18 @@ using namespace std;
 //=============================================================================
 
 // start version scales
-#define D_RADIUS_SCALE_SMALL 15.0f
-#define D_RADIUS_SCALE_BIG 6.0f
-#define D_DISTANCE_SCALE_SMALL 0.03f
-#define D_DISTANCE_SCALE_BIG 0.015f
-#define D_DISTANCE_SCALE_MOON 1.5f
+// #define D_RADIUS_SCALE_SMALL 15.0f
+// #define D_RADIUS_SCALE_BIG 6.0f
+// #define D_DISTANCE_SCALE_SMALL 0.03f
+// #define D_DISTANCE_SCALE_BIG 0.015f
+// #define D_DISTANCE_SCALE_MOON 1.5f
 
 // better version <-- use this as soon as you finished the first 2 tasks
-// #define D_RADIUS_SCALE_SMALL 12.0f
-// #define D_RADIUS_SCALE_BIG 7.0f
-// #define D_DISTANCE_SCALE_SMALL 0.07f
-// #define D_DISTANCE_SCALE_BIG 0.07f
-// #define D_DISTANCE_SCALE_MOON 1.5f
+#define D_RADIUS_SCALE_SMALL 12.0f
+#define D_RADIUS_SCALE_BIG 7.0f
+#define D_DISTANCE_SCALE_SMALL 0.07f
+#define D_DISTANCE_SCALE_BIG 0.07f
+#define D_DISTANCE_SCALE_MOON 1.5f
 
 // realistic version <-- use this just if you are interested in realistic scales
 // or if you want to get a 'lost in space' feeling (use the spaceship and try to reach some of the other planets)
@@ -528,24 +528,6 @@ void Solar_viewer::draw_scene(mat4& projection, mat4& view)
     if (time > 1e6)
         time = -1e5;
 
-        /** \todo Provide the correct input and draw order for all your objects.
-    * 3. For Earth replace `phong_shader` by `earth_shader`.
-    *    - You can identify a specific planet in the `planets_` vector by its name (e.g. `if(planet->name_ == "earth")`
-    *    - Look at the shader code (`shader/earth.vert`, `shader/earth.frag`).
-    *    - All uniforms must be passed here (`set_uniform(...)`).
-    *    - Earth uses multiple textures, in `set_uniform(...)` you must pass the correct channel (0,1,2,...).
-    *      Those channels are set in `Solar_viewer::initialize()` in the first argument of `Texture::init(...)`
-    *    - When you're done, complete the shader code.
-    *
-    * 4.(optional) To get a glowing sun aura, we use a billboard. That is a simple quad texture always facing the camera.
-    *    - Render it with the color shader
-    *    - Since the sunglow uses transparency you will have to use `glEnable(GL_BLEND)` and `glDisable(GL_BLEND)`
-    *      to activate and deactivate blending.
-    *    - The order, in which the transparent objects are rendered is also important.
-    *    - The texture will be bound in `sun_.glow_->draw()` so you don't have to do it.
-    * 5. Feel free to try out your own ideas.
-	*/
-
     m_matrix = stars_.model_matrix_;
     mv_matrix = view * m_matrix;
     mvp_matrix = projection * mv_matrix;
@@ -554,14 +536,6 @@ void Solar_viewer::draw_scene(mat4& projection, mat4& view)
     color_shader_.set_uniform("tex", 0);
     color_shader_.set_uniform("greyscale", (int)greyscale_);
     stars_.texture_.bind();
-    unit_sphere_mesh_.draw();
-
-    // render sun with simple shader
-    m_matrix = sun_.model_matrix_;
-    mv_matrix = view * m_matrix;
-    mvp_matrix = projection * mv_matrix;
-    color_shader_.set_uniform("modelview_projection_matrix", mvp_matrix);
-    sun_.texture_.bind();
     unit_sphere_mesh_.draw();
 
     color_shader_.disable();
@@ -611,6 +585,28 @@ void Solar_viewer::draw_scene(mat4& projection, mat4& view)
 
     phong_shader_.disable();
 
+    glEnable(GL_BLEND);
+    color_shader_.use();
+
+    // render sun with simple shader
+    m_matrix = sun_.model_matrix_;
+    mv_matrix = view * m_matrix;
+    mvp_matrix = projection * mv_matrix;
+    color_shader_.set_uniform("modelview_projection_matrix", mvp_matrix);
+    sun_.texture_.bind();
+    unit_sphere_mesh_.draw();
+
+    mat4 vpMatrix = projection * view;
+    float xAngle = sun_.glow_->angle_x_;
+    float yAngle = sun_.glow_->angle_y_;
+    mat4 billboardMvp = vpMatrix * mat4::translate(sun_.position_) * mat4::rotate_y(yAngle) * mat4::rotate_x(xAngle) * mat4::scale(1.9f);
+
+    color_shader_.set_uniform("modelview_projection_matrix", billboardMvp);
+
+    sun_.glow_->draw();
+
+    color_shader_.disable();
+    glDisable(GL_BLEND);
 
     // check for OpenGL errors
     glCheckError();

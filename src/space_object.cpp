@@ -43,7 +43,7 @@ void Space_Object::create_glow(float outer_radius, vec3 color)
     glow_->create_glow_texture(res, (int)(res / (2.0 * outer_radius)) - 1,
                                res / 2 - 1, color);
 
-    // initialize quad vertex layouts
+    // initialize quad vertex layoutssudo
     glow_->init_GL_arrays();
 }
 
